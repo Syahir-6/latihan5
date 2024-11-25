@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Objek Wisata Sulawesi Selatan</title>
+    <link rel="stylesheet" href="Tp3_syle-makanan.css">
+	
+	<style>
+	
+	        /* Form Input */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        form label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        form input[type="text"], form textarea, form input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        form input[type="text"]:focus, form textarea:focus, form input[type="file"]:focus {
+            outline: none;
+            border-color: #007BFF;
+            background-color: #fff;
+        }
+
+        form textarea {
+            resize: vertical;
+        }
+
+        form .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        form button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 48%;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        form .cancel-btn {
+            background-color: #ccc;
+        }
+
+        form .cancel-btn:hover {
+            background-color: #999;
+        }
+
+
+    </style>
+</head>
+<body>
+    <header>Objek Wisata</header>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="index.php">Dashboard</a></li>
+                    <li><a href="Tprak3_tabel-makanan.html">Makanan Khas</a></li>
+                    <li><a href="wisata.html">Objek Wisata</a></li>
+                    <li><a href="logout.php">Keluar</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Konten Utama -->
+        <section class="content">
+            <h1>Daftar Objek Wisata Sulawesi Selatan</h1>
+
+            <!-- Form untuk Menambah Objek Wisata -->
+            <form id="tourism-form">
+                <label for="tourism-name">Nama Objek Wisata</label>
+                <input type="text" id="tourism-name" placeholder="Masukkan nama objek wisata" required>
+
+                <label for="tourism-desc">Deskripsi Objek Wisata</label>
+                <textarea id="tourism-desc" rows="5" placeholder="Masukkan deskripsi objek wisata" required></textarea>
+
+                <label for="tourism-image">Upload Gambar Objek Wisata</label>
+                <input type="file" id="tourism-image" accept="image/*">
+
+                <div class="button-group">
+                    <button type="button" id="submit-btn" onclick="addTourism()">Tambah Objek Wisata</button>
+                    <button type="button" class="cancel-btn" onclick="window.location.href='wisata.html'">Batal</button>
+                </div>
+            </form>
+
+            <br>
+
+            <!-- Tabel Informasi Objek Wisata -->
+            <table id="tourism-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Objek Wisata</th>
+                        <th>Gambar</th>
+                        <th>Deskripsi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data akan diisi menggunakan script di bawah -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        // Fungsi untuk menambah objek wisata
+        function addTourism() {
+            const tourismName = document.getElementById('tourism-name').value;
+            const tourismDesc = document.getElementById('tourism-desc').value;
+            const tourismImage = document.getElementById('tourism-image').files[0];
+
+            if (!tourismName || !tourismDesc || !tourismImage) {
+                alert("Semua data harus diisi!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const tourismData = {
+                    name: tourismName,
+                    description: tourismDesc,
+                    image: e.target.result,
+                };
+
+                const tourismList = JSON.parse(localStorage.getItem('tourismList')) || [];
+                tourismList.push(tourismData);
+                localStorage.setItem('tourismList', JSON.stringify(tourismList));
+
+                alert("Data objek wisata berhasil ditambahkan!");
+                location.reload(); // Refresh halaman untuk menampilkan data yang baru
+            };
+
+            reader.readAsDataURL(tourismImage);
+        }
+
+        // Script untuk menampilkan data dari LocalStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const tourismList = JSON.parse(localStorage.getItem('tourismList')) || [];
+            const tbody = document.querySelector('#tourism-table tbody');
+
+            tourismList.forEach((tourism, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${tourism.name}</td>
+                    <td><img src="${tourism.image}" alt="${tourism.name}" width="100"></td>
+                    <td>${tourism.description}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editTourism(${index})">Edit</button>
+                        <button class="delete-btn" onclick="deleteTourism(${index})">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
+
+        // Fungsi untuk mengedit objek wisata
+        function editTourism(index) {
+            const tourismList = JSON.parse(localStorage.getItem('tourismList')) || [];
+            const tourism = tourismList[index];
+
+            // Isi form dengan data yang ada
+            document.getElementById('tourism-name').value = tourism.name;
+            document.getElementById('tourism-desc').value = tourism.description;
+            document.getElementById('tourism-image').value = ''; // Clear file input
+
+            // Ganti tombol 'Tambah Objek Wisata' menjadi 'Update Objek Wisata'
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.textContent = 'Update Objek Wisata';
+            submitBtn.setAttribute('onclick', `updateTourism(${index})`);
+        }
+
+        // Fungsi untuk memperbarui objek wisata setelah edit
+        function updateTourism(index) {
+            const tourismName = document.getElementById('tourism-name').value;
+            const tourismDesc = document.getElementById('tourism-desc').value;
+            const tourismImage = document.getElementById('tourism-image').files[0];
+
+            if (!tourismName || !tourismDesc) {
+                alert("Semua data harus diisi!");
+                return;
+            }
+
+            const tourismList = JSON.parse(localStorage.getItem('tourismList')) || [];
+            const tourism = tourismList[index];
+
+            // Jika ada gambar baru yang di-upload, gunakan gambar baru
+            if (tourismImage) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tourism.image = e.target.result; // Update image jika ada yang baru
+                    tourism.name = tourismName;
+                    tourism.description = tourismDesc;
+                    tourismList[index] = tourism;
+                    localStorage.setItem('tourismList', JSON.stringify(tourismList));
+
+                    alert("Data objek wisata berhasil diperbarui!");
+                    location.reload(); // Refresh halaman untuk menampilkan data yang baru
+                };
+                reader.readAsDataURL(tourismImage);
+            } else {
+                tourism.name = tourismName;
+                tourism.description = tourismDesc;
+                tourismList[index] = tourism;
+                localStorage.setItem('tourismList', JSON.stringify(tourismList));
+
+                alert("Data objek wisata berhasil diperbarui!");
+                location.reload(); // Refresh halaman untuk menampilkan data yang baru
+            }
+        }
+
+        // Fungsi untuk menghapus objek wisata
+        function deleteTourism(index) {
+            const tourismList = JSON.parse(localStorage.getItem('tourismList')) || [];
+            const tourismName = tourismList[index]?.name;
+            tourismList.splice(index, 1);
+            localStorage.setItem('tourismList', JSON.stringify(tourismList));
+            alert(`Objek wisata "${tourismName}" berhasil dihapus.`);
+            location.reload();
+        }
+    </script>
+</body>
+</html>

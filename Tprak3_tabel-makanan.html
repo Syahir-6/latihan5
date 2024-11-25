@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Daftar Makanan Khas Sulawesi Selatan</title>
+ <link rel="stylesheet" href="Tp3_syle-makanan.css">
+ 	<style>
+	
+	        /* Form Input */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        form label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        form input[type="text"], form textarea, form input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        form input[type="text"]:focus, form textarea:focus, form input[type="file"]:focus {
+            outline: none;
+            border-color: #007BFF;
+            background-color: #fff;
+        }
+
+        form textarea {
+            resize: vertical;
+        }
+
+        form .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        form button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 48%;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        form .cancel-btn {
+            background-color: #ccc;
+        }
+
+        form .cancel-btn:hover {
+            background-color: #999;
+        }
+
+
+    </style>
+</head>
+<body>
+ <header> Makanan Khas </header>
+ <div class="container">
+ <!-- Sidebar -->
+ <aside class="sidebar">
+ <nav>
+ <ul>
+  <li><a href="index.php">Dashboard</a></li>
+ <li><a href="Tprak3_tabel-makanan.html">Makanan Khas</a></li>
+ <li><a href="wisata.html">Objek Wisata</a></li>
+ <li><a href="logout.php">Keluar</a></li>
+ </ul>
+ </nav>
+ </aside>
+ <!-- Konten Utama -->
+ <section class="content">
+ <h1>Daftar Makanan Khas Sulawesi Selatan</h1> 
+
+ <!-- Form untuk Menambahkan Data -->
+ <form id="food-form">
+    <label for="food-name">Nama Makanan</label>
+    <input type="text" id="food-name" placeholder="Masukkan nama makanan" required>
+
+    <label for="food-desc">Deskripsi Makanan</label>
+    <textarea id="food-desc" rows="5" placeholder="Masukkan deskripsi makanan" required></textarea>
+
+    <label for="food-image">Upload Gambar Makanan</label>
+    <input type="file" id="food-image" accept="image/*" required>
+
+    <div class="button-group">
+        <button type="button" onclick="addFood()">Tambah Makanan</button>
+        <button type="button" class="cancel-btn" onclick="window.location.href='Tprak3_tabel-makanan.html'">Batal</button>
+    </div>
+</form>
+
+<br>
+
+ <!-- Tabel Informasi Makanan -->
+ <table id="food-table">
+ <thead>
+ <tr>
+ <th>No</th>
+ <th>Nama Makanan</th>
+ <th>Gambar</th>
+ <th>Deskripsi</th>
+ <th>Aksi</th>
+ </tr>
+ </thead>
+ <tbody>
+ <!-- Baris tabel makanan akan diisi oleh script di bawah -->
+ </tbody>
+ </table>
+ </section>
+ </div>
+
+ <script>
+    // Fungsi untuk menambah makanan
+    function addFood() {
+        const foodName = document.getElementById('food-name').value;
+        const foodDesc = document.getElementById('food-desc').value;
+        const foodImage = document.getElementById('food-image').files[0];
+
+        if (!foodName || !foodDesc || !foodImage) {
+            alert("Semua data harus diisi!");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const foodData = {
+                name: foodName,
+                description: foodDesc,
+                image: e.target.result,
+            };
+
+            const foodList = JSON.parse(localStorage.getItem('foodList')) || [];
+            foodList.push(foodData);
+            localStorage.setItem('foodList', JSON.stringify(foodList));
+
+            alert("Data berhasil ditambahkan!");
+            location.reload(); // Refresh halaman untuk menampilkan data yang baru
+        };
+
+        reader.readAsDataURL(foodImage);
+    }
+
+    // Script untuk menampilkan data dari LocalStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        const foodList = JSON.parse(localStorage.getItem('foodList')) || [];
+        const tbody = document.querySelector('#food-table tbody');
+
+        foodList.forEach((food, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${food.name}</td>
+                <td><img src="${food.image}" alt="${food.name}" width="100"></td>
+                <td>${food.description}</td>
+                <td>
+                    <button class="edit-btn" onclick="editFood(${index})">Edit</button>
+                    <button class="delete-btn" onclick="deleteFood(${index})">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    });
+
+    // Fungsi untuk mengedit makanan
+    function editFood(index) {
+        const foodList = JSON.parse(localStorage.getItem('foodList')) || [];
+        const food = foodList[index];
+
+        // Isi form dengan data yang ada
+        document.getElementById('food-name').value = food.name;
+        document.getElementById('food-desc').value = food.description;
+        document.getElementById('food-image').value = ''; // Clear file input
+
+        // Ganti tombol 'Tambah Makanan' menjadi 'Update Makanan'
+        const addButton = document.querySelector('button[onclick="addFood()"]');
+        addButton.textContent = 'Update Makanan';
+        addButton.setAttribute('onclick', `updateFood(${index})`);
+    }
+
+    // Fungsi untuk memperbarui makanan setelah edit
+    function updateFood(index) {
+        const foodName = document.getElementById('food-name').value;
+        const foodDesc = document.getElementById('food-desc').value;
+        const foodImage = document.getElementById('food-image').files[0];
+
+        if (!foodName || !foodDesc) {
+            alert("Semua data harus diisi!");
+            return;
+        }
+
+        const foodList = JSON.parse(localStorage.getItem('foodList')) || [];
+        const food = foodList[index];
+
+        // Jika ada gambar baru yang di-upload, gunakan gambar baru
+        if (foodImage) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                food.image = e.target.result; // Update image jika ada yang baru
+                food.name = foodName;
+                food.description = foodDesc;
+                foodList[index] = food;
+                localStorage.setItem('foodList', JSON.stringify(foodList));
+
+                alert("Data berhasil diperbarui!");
+                location.reload(); // Refresh halaman untuk menampilkan data yang baru
+            };
+            reader.readAsDataURL(foodImage);
+        } else {
+            food.name = foodName;
+            food.description = foodDesc;
+            foodList[index] = food;
+            localStorage.setItem('foodList', JSON.stringify(foodList));
+
+            alert("Data berhasil diperbarui!");
+            location.reload(); // Refresh halaman untuk menampilkan data yang baru
+        }
+    }
+
+    // Fungsi untuk menghapus makanan
+    function deleteFood(index) {
+        const foodList = JSON.parse(localStorage.getItem('foodList')) || [];
+        const foodName = foodList[index]?.name;
+        foodList.splice(index, 1);
+        localStorage.setItem('foodList', JSON.stringify(foodList));
+        alert(`Makanan "${foodName}" berhasil dihapus.`);
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
